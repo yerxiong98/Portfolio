@@ -8,6 +8,8 @@ Brief Summary:
 EXCEL - =right( , ),=left( , ),=mid( , , ), =concatenate( , , , , , ), =datevalue()
 MYSQL - WHERE, GROUP BY, HAVING, ORDER BY, CTEs, JOINS, aggregate functions, subqueries, ALTER, ADD, SET, RENAME, CONSTRAINTS, LOAD DATA, data types, IN, ON
 TABLEAU - dashboard, visualization
+https://public.tableau.com/app/profile/yer.xiong/viz/Book1_16828286230680/Dashboard1
+
 
 Summary:
 This is my first sql/tableau project where I took two datasets off kaggle.com, superstore stores and us_population_estimate_2019. 
@@ -33,6 +35,7 @@ Since I was adding another table to the database I wanted to add foreign keys an
 REFERENCES, and RENAME. 
 
 I imported the tables and a couple of queries into Tableau to visualize a dashboard for sales from 2015 to 2018. 
+https://public.tableau.com/app/profile/yer.xiong/viz/Book1_16828286230680/Dashboard1
 
 What I learned from this project is more experience with utilizing Tableau to visualize a dashboard with different techniques. I also learned that more uses of 
 the different clauses in MYSQL. Some things that I will work on in the future are better uses of CTEs, subqueries, and windows functions. There are also better alternatives

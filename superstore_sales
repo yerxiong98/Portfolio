@@ -1,18 +1,55 @@
 
 Yer Xiong
-4/28/2023
-1st
+4/30/2023
 
 Superstore Sales
 
+Brief Summary: 
+EXCEL - =right( , ),=left( , ),=mid( , , ), =concatenate( , , , , , ), =datevalue()
+MYSQL - WHERE, GROUP BY, HAVING, ORDER BY, CTEs, JOINS, aggregate functions, subqueries, ALTER, ADD, SET, RENAME, CONSTRAINTS
+TABLEAU - dashboard, visualization
+
+Summary:
+This is my first sql/tableau project where I took two datasets off kaggle.com, superstore stores and us_population_estimate_2019. 
+I first started in MYSQL with creating a database store and creating a table, sales, to store my superstore sales into. 
+
+This is where my first problem was. At this current time, I do not know how to use python/pandas to clean the data before being able to put it into my table.
+My first issue was the formatting of the order_date and ship_date with the dates being in DD/MM/YYYY. I don't think this is recognized in MYSQL so I opened up the csv
+into google sheets and decided to clean the data there. 
+
+This is where my next issue was. Dates were either being recognized as date values and some being recognized as text values so the function =datevalue() was giving
+me an error for atleast half of the dates. So what I did, which probably has a better solution, was that I used =right(), =mid(), =left() to split the dates into number
+values into different columns. I then used =concatenate() with a cell with the value '-' to get '2017-05-16' so that dates were actually in the right format. I then 
+special pasted the results into the actual order_date and ship_date columns.
+
+I used LOAD DATA to get the data into the table sales. I wasn't happy with the sales column having the same name as the table so I used ALTER to rename the column.
+I then did a bunch of random queries that I thought would be helpful to visualize. Some basic queries involving WHERE, GROUP BY, HAVING, ORDER BY, CTEs, JOINS,
+aggregate functions, and subqueries.
+
+After that I thought that having US populations to compare to the amount of customers from each state would be interesting to have so I got the us_population_estimate_2019 
+from kaggle.com and added that to the database.
+
+Since I was adding another table to the database I wanted to add foreign keys and primary keys to the two tables. I use ALTER, ADD CONSTRAINTS, ADD FOREIGN KEY, 
+REFERENCES, and RENAME. 
+
+I imported the tables and a couple of queries into Tableau to visualize a dashboard for sales from 2015 to 2018. 
+
+What I learned from this project is more experience with utilizing Tableau to visualize a dashboard with different techniques. I also learned that more uses of 
+the different clauses in MYSQL. Some things that I will work on in the future are better uses of CTEs, subqueries, and windows functions. There are also better alternatives
+to what I'm trying to solve. Another thing that I could work on is to have a better plan to tackling a business task. I came into this project without a solid idea
+of what I wanted to do with it. I didn't really ASK to see what the issue was. I also didn't prepare for all the data that I could have added to the database to get 
+more queries. My ASK and PREPARE phase wasn't as planned as it should have been which caused the CLEANING and ANALYZING to be a little back and forth.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 CREATE DATABASE store;
 
---@block
+
 USE store;
 
---@block create table to store data FROM file superstore_sales.csv
+
+
+--create table to store data FROM file superstore_sales.csv
+
 CREATE TABLE sales(
 row_id INT PRIMARY KEY,
 order_id varchar(50),
@@ -34,8 +71,8 @@ product_name VARCHAR(200),
 sales DECIMAL(7,2)
 );
 
-/* 
-PROBLEM 1
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
 
 The date value for column order_date and ship_date was an incorrect date value
 because the format was DD/MM/YYYY. At this current time I thought the easiest solution was to open
@@ -57,8 +94,16 @@ which I then replaced all the dates for columns order_date with their correspond
 I also did the same for ship_date. I then formatted the two columns into YYYY-MM-DD. 
 
 */
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* 
 
---@block use LOAD DATA to load superstore_sales csv data into table sales
+creating table sales and doing different queries that I thought could be used for analysis/visualizing
+
+*/
+
+
+--use LOAD DATA to load superstore_sales csv data into table sales
+
 LOAD DATA infile 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/superstore.csv'
 INTO TABLE sales
 fields terminated BY ','
@@ -69,13 +114,15 @@ IGNORE 1 LINES
 (row_id, order_id, order_date, ship_date, ship_mode, customer_id, customer_name, segment, country,
 city, state, postal_code, region, product_id, category, sub_category, product_name, sales);
 
---@block
-SELECT * FROM sales
-ORDER BY customer_name ASC;
 
---@block renamed sales column to total_sales so its not the same name as the table 
+
+
+--@block I decided to rename sales column to total_sales so its not the same name as the table 
 ALTER TABLE sales
 rename column sales to total_sales;
+
+
+
 
 --@block query data on repeat customers
 SELECT customer_name, sum(total_sales) as total FROM sales
@@ -86,6 +133,8 @@ HAVING COUNT(*)>1)
 GROUP BY customer_id
 ORDER BY total DESC;
 
+
+
 --@block query with a cte for finding data from single time customers from sales 
 WITH single AS (
 SELECT customer_id FROM sales
@@ -95,20 +144,28 @@ HAVING COUNT(*) = 1)
 SELECT * FROM sales
 RIGHT JOIN single ON sales.customer_id = single.customer_id;
 
---@block 
+
+
+
+
 /*
 
-Same problem as above but not using a cte since the cte above is 
-not really doing anything needing a cte so I just used a simple subquery and not a join
+Same problem as above but not using a cte since I don't really know what the cte is doing for there. 
+Something that I should research more about, uses of cte
 
 */
 
+--@block
 SELECT * FROM sales
 WHERE customer_id IN (SELECT customer_id FROM sales
 GROUP BY customer_id
 HAVING COUNT(*) = 1);
 
---@block query to find how many repeast customers there are
+
+
+
+
+--@block query to find how many repeat customers there are
 SELECT DISTINCT(count(customer_id))-(SELECT count(customer_id) FROM sales
 WHERE customer_id IN
 (SELECT customer_id FROM sales
@@ -116,21 +173,24 @@ GROUP BY customer_id
 HAVING COUNT(*) = 1)) FROM sales;
 
 
+
+
+
 --@block query to sort all sub categories, categories, and their respective totals
 SELECT DISTINCT sub_category, category, sum(total_sales) AS total FROM sales
 GROUP BY sub_category
 ORDER BY total DESC;
 
---@block test
-SELECT order_id, order_date, customer_name, customer_id, sum(total_sales) AS total FROM sales
-WHERE customer_name = 'Aaron Bergman'
-GROUP BY order_id
-ORDER BY customer_name, order_date ASC;
+
+
 
 
 --@block query to find average number of days between each purchase by a customer
 SELECT avg(averages) FROM (SELECT datediff(max(order_date),min(order_date))/count(DISTINCT order_date) as averages from sales
 GROUP BY customer_id) AS average_each;
+
+
+
 
 
 --@block query time between order date and ship date for each sub_category of a category
@@ -143,10 +203,17 @@ SELECT sub_category, category, avg(days_between) AS avg_delivery FROM diff_dates
 GROUP BY sub_category
 ORDER BY avg_delivery DESC;
 
+
+
+
 --@block query to see sales across cities
 SELECT city, state, country, postal_code, SUM(total_sales) AS sum_sales FROM sales
 GROUP BY city
 ORDER BY sum_sales DESC;
+
+
+
+
 
 --@block query category,segment, sum of total sales
 SELECT category, segment, sum(total_sales) as sum_sales FROM sales
@@ -154,10 +221,15 @@ GROUP BY segment,category
 ORDER BY category ASC,sum_sales DESC;
 
 
---@block
-SELECT * FROM sales;
 
---@block create table us_population to reference future queries to 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
+creating table us_population to join on sales for other queries
+*/
+
+
+
+--@block create table us_population to join on sales
 CREATE TABLE us_population
 (
     STATE VARCHAR(20) primary key,
@@ -165,6 +237,8 @@ CREATE TABLE us_population
     latitude DECIMAL(9,6),
     longitude DECIMAL(9,6)
 );
+
+
 
 --@block load data into table us_population
 LOAD DATA infile 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/us_pop_state.csv'
@@ -174,13 +248,22 @@ lines terminated BY '\n'
 IGNORE 1 LINES
 (state,popestimate2019,latitude,longitude);
 
+
+
+
 --@block add constraint primary key to us_populatation.state after it was already created
 ALTER TABLE us_population
 add CONSTRAINT PK_state PRIMARY KEY(state);
 
+
+
+
 --@block add foreign key to sales table referencing us_population.state after table was already existing
 ALTER TABLE sales
 ADD FOREIGN KEY (state) REFERENCES us_population(state);
+
+
+
 
 --@block select to show what states customers are located in compared to population of each state
 SELECT state, count(customer_name) as cust_state, population FROM sales s
@@ -188,33 +271,30 @@ LEFT JOIN us_population p USING (state)
 GROUP BY state
 ORDER BY cust_state DESC;
 
+
+
+
+
 --@block renaming column popestimate2019 to population 
 ALTER TABLE us_population
 RENAME column popestimate2019 TO population;
+
+
+
+
 
 --@block select to get states, populations, and percent of total pop
 SELECT state, population, 100*population/(SELECT sum(population) FROM us_population) AS percent_pop FROM us_population
 ORDER BY percent_pop DESC;
 
---@block
-/*WITH count_cust_state AS
-(SELECT state, count(DISTINCT customer_name) as cust_state FROM sales
-GROUP BY state)
-
-SELECT state, sum(cust_state), cust_state FROM count_cust_state
-group by state; */
-
-SELECT DISTINCT customer_name, 
-    Count(*) OVER (PARTITION BY state) AS pop_state, 
-    SUM(pop_state) OVER () total_cust
-FROM sales;
 
 
---@block
-SELECT * FROM sales;
 
 --@block
 /*
+
+Some questions that I thought could be helpful to query
+
 
 holidays?
 what months most sales per city
@@ -226,8 +306,10 @@ how many cisco products did we sell?
 
 
 
-
 */
+
+
+
 
 
 --@block 
@@ -242,15 +324,27 @@ ORDER BY year_cm DESC )
 SELECT year_cm ,sum(total) AS total_cm_year FROM christmas
 GROUP BY year_cm;
 
+
+
+
+
 --@block total sales per year
 SELECT year(order_date) as year_sales, sum(total_sales) FROM sales
 GROUP BY year_sales
 ORDER BY year_sales asc;
 
+
+
+
+
 --@block total sales per zipcode?
 SELECT postal_code, sum(total_sales) as sales_zip FROM sales
 GROUP BY postal_code
 ORDER BY sales_zip DESC;
+
+
+
+
 
 --@block how many cisco products did we sell? per year? per state?
 SELECT year(order_date) as year, state, count(product_name) as cisco_products_sold FROM sales
@@ -258,29 +352,30 @@ WHERE product_name regexp '^cisco|%cisco%|cisco$'
 GROUP BY year, state
 ORDER BY year, cisco_products_sold DESC;
 
+
+
+
 --@block how many _______ products did we sell per year per state?
 SELECT YEAR(order_date) AS year, state, category, COUNT(category) AS category_sold FROM sales
 GROUP BY state, category, year
 ORDER BY state ASC,year asc;
+
+
+
+
 
 --@block does ship_mode have any correlation to average order sale? no/minimal
 SELECT ship_mode, avg(total_sales) as total FROM sales
 GROUP BY ship_mode
 ORDER BY ship_mode, total DESC;
 
---@block
+
+
+
+--@block query to find sales grouped by dates
 
 SELECT order_date, sum(total_sales)  FROM sales
 group by order_date
 order by order_date asc;
 
---@block
-select row_id,customer_name,customer_id, order_id, product_id, total_sales from sales
-where (select count(product_id) from sales group by customer_id) > 1
-group by customer_id;
-
---@block
-select row_id, order_id, customer_id, customer_name, product_id, product_name, count(*) from sales
-group by customer_id, product_name
-having count(*) > 1;
 

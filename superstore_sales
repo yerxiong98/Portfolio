@@ -6,7 +6,7 @@ Superstore Sales
 
 Brief Summary: 
 EXCEL - =right( , ),=left( , ),=mid( , , ), =concatenate( , , , , , ), =datevalue()
-MYSQL - WHERE, GROUP BY, HAVING, ORDER BY, CTEs, JOINS, aggregate functions, subqueries, ALTER, ADD, SET, RENAME, CONSTRAINTS
+MYSQL - WHERE, GROUP BY, HAVING, ORDER BY, CTEs, JOINS, aggregate functions, subqueries, ALTER, ADD, SET, RENAME, CONSTRAINTS, LOAD DATA, data types, IN, ON
 TABLEAU - dashboard, visualization
 
 Summary:
